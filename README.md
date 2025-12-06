@@ -35,3 +35,124 @@ It's recommended to use a virtual environment for managing dependencies:
 
    ```bash
    python -m venv image-gen-env
+   ```
+   **Activate environment**
+   ```image-gen-env\Scripts\activate```
+   
+## Install Dependencies
+**Install all required packages:**
+```base
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+pip install diffusers transformers huggingface_hub Pillow accelerate
+```
+## Get Your Hugging Face API Token
+
+1. Visit: https://huggingface.co/settings/tokens  
+2. Click **Create New Token**  
+3. Choose **READ** access  
+4. Copy the generated token
+## Authenticate in Python
+```base
+from huggingface_hub import login
+login("YOUR_HUGGINGFACE_API_TOKEN")
+```
+## Load the Stable Diffusion Model
+```base
+from diffusers import StableDiffusionPipeline
+import torch
+
+pipe = StableDiffusionPipeline.from_pretrained(
+    "runwayml/stable-diffusion-v1-5",
+    torch_dtype=torch.float16
+)
+
+pipe.to("cuda")  # remove if using CPU only
+```
+## Create a Text Prompt
+```base
+prompt = "A futuristic neon-lit city, cyberpunk style, extremely detailed, 4K"
+```
+## Generate the Image
+```base
+image = pipe(prompt).images[0]
+```
+## Save & Display the Image
+```base
+image.save("generated_image.png")
+image.show()
+```
+## FULL WORKING SCRIPT (generate.py)
+**Save this file as:generate.py**
+```base
+from diffusers import StableDiffusionPipeline
+from huggingface_hub import login
+import torch
+
+# --------------------------------------
+# 1. Authenticate Hugging Face
+# --------------------------------------
+login("YOUR_HUGGINGFACE_API_TOKEN")
+
+
+# --------------------------------------
+# 2. Load the Stable Diffusion Model
+# --------------------------------------
+pipe = StableDiffusionPipeline.from_pretrained(
+    "runwayml/stable-diffusion-v1-5",
+    torch_dtype=torch.float16
+)
+
+# Use GPU if available
+pipe.to("cuda")
+
+
+# --------------------------------------
+# 3. Your Image Prompt
+# --------------------------------------
+prompt = "A beautiful magical forest with glowing flowers, fantasy style, ultra detailed"
+
+
+# --------------------------------------
+# 4. Generate the Image
+# --------------------------------------
+image = pipe(prompt).images[0]
+
+
+# --------------------------------------
+# 5. Save the Image
+# --------------------------------------
+image.save("generated_image.png")
+
+print("Image successfully generated and saved as generated_image.png")
+```
+## Run the Script
+```base
+python generate.py
+```
+**This will produce:**
+```base
+generated_image.png
+```
+## Optional: Enable GPU Acceleration
+```base
+import torch
+print(torch.cuda.is_available())
+```
+## Optional: Fine-Tuning
+**You can fine-tune Stable Diffusion using:**
+```base
+✔ DreamBooth
+✔ LoRA
+✔ Textual Inversion
+```
+
+## Suggested Prompts
+**A photorealistic portrait of a woman, soft natural lighting, 8K, ultra detailed**
+
+
+---
+
+If you want this turned into a **GitHub repo**, **zip file**, or **multiple scripts**, just tell me!
+
+
+
