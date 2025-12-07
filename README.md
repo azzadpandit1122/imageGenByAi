@@ -80,8 +80,8 @@ prompt = "A futuristic neon-lit city, cyberpunk style, extremely detailed, 4K"
 python setup_and_run.py
 ```
 
-📣 Contributions & Issues
-Feel free to open issues or request improvements for scripts, prompts, or better GPU utilization.
+## Contributions & Issues
+- Feel free to open issues or request improvements for scripts, prompts, or better GPU utilization.
 
 
 ---
