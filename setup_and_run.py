@@ -7,9 +7,10 @@ import shutil
 # -------------------------------
 # Configuration
 # -------------------------------
-VENV_DIR = ".venv"                  # Name of the virtual environment folder
-USE_GPU = False                     # True for GPU version, False for CPU
+VENV_DIR = ".venv"                  # Virtual environment folder
+FORCE_CPU = True                    # Force CPU-only PyTorch to avoid WinError 1114
 MODEL_SCRIPT = "download_model.py"  # Your model script
+PYTORCH_CUDA_INDEX = "cu121"        # GPU version if FORCE_CPU=False
 
 # -------------------------------
 # Helper functions
@@ -25,7 +26,7 @@ def run(cmd):
 def delete_broken_venv():
     """Delete venv if it is broken or missing pyvenv.cfg."""
     venv_cfg = os.path.join(VENV_DIR, "pyvenv.cfg")
-    if os.path.exists(VENV_DIR) and (not os.path.exists(venv_cfg)):
+    if os.path.exists(VENV_DIR) and not os.path.exists(venv_cfg):
         print(f"⚠️  Detected broken venv, deleting: {VENV_DIR}")
         try:
             shutil.rmtree(VENV_DIR)
@@ -34,7 +35,7 @@ def delete_broken_venv():
             sys.exit(1)
 
 def create_venv():
-    """Create virtual environment."""
+    """Create virtual environment if missing."""
     if not os.path.exists(VENV_DIR):
         print(f"✨ Creating virtual environment: {VENV_DIR}")
         venv.create(VENV_DIR, with_pip=True)
@@ -47,14 +48,28 @@ def get_pip_path():
 def get_python_path():
     return os.path.join(VENV_DIR, "Scripts", "python.exe")
 
+def install_dependencies(pip_path):
+    """Install PyTorch and other dependencies."""
+    if FORCE_CPU:
+        print("⚡ Installing CPU-only PyTorch")
+        run(f'"{pip_path}" install --upgrade pip')
+        run(f'"{pip_path}" install torch --index-url https://download.pytorch.org/whl/cpu')
+        run(f'"{pip_path}" install torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu')
+    else:
+        print(f"⚡ Installing GPU-enabled PyTorch ({PYTORCH_CUDA_INDEX})")
+        run(f'"{pip_path}" install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/{PYTORCH_CUDA_INDEX}')
+
+    # Install diffusers, transformers, accelerate
+    run(f'"{pip_path}" install diffusers transformers accelerate')
+
 # -------------------------------
-# Main setup process
+# Main setup and execution
 # -------------------------------
 if __name__ == "__main__":
-    # Step 1: Delete broken venv if needed
+    # Step 1: Delete broken venv if exists
     delete_broken_venv()
 
-    # Step 2: Create venv if missing
+    # Step 2: Create virtual environment
     create_venv()
 
     pip_path = get_pip_path()
@@ -63,24 +78,19 @@ if __name__ == "__main__":
     # Step 3: Upgrade pip
     run(f'"{python_path}" -m pip install --upgrade pip')
 
-    # Step 4: Install PyTorch
-    if USE_GPU:
-        print("⚡ Installing GPU-enabled PyTorch")
-        run(f'"{pip_path}" install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121')
-    else:
-        print("⚡ Installing CPU-only PyTorch")
-        run(f'"{pip_path}" install torch --index-url https://download.pytorch.org/whl/cpu')
-        run(f'"{pip_path}" install torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu')
+    # Step 4: Install dependencies
+    install_dependencies(pip_path)
 
-    # Step 5: Install other dependencies
-    run(f'"{pip_path}" install diffusers transformers accelerate')
+    # Step 5: Force CPU-only for torch
+    os.environ["CUDA_VISIBLE_DEVICES"] = ""  # Ensures CPU-only execution
 
-    # Step 6: Run your model script
+    # Step 6: Run the model script
     model_path = os.path.abspath(MODEL_SCRIPT)
     if not os.path.exists(model_path):
         print(f"❌ Model script not found: {model_path}")
         sys.exit(1)
 
+    # Run the model in the new environment
     run(f'"{python_path}" "{model_path}"')
 
-    print("\n✅ Setup complete and model script executed successfully!")
+    print("\n✅ Production setup complete and model executed successfully!")
