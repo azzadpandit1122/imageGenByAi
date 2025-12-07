@@ -1,0 +1,1 @@
+##Model URL - https://huggingface.co/nitrosocke/Ghibli-Diffusion
