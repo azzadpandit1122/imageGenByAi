@@ -25,6 +25,7 @@ def run(cmd):
 
 def delete_broken_venv():
     """Delete venv if it is broken or missing pyvenv.cfg."""
+    print("\n🔹 STEP 1: Checking for broken virtual environment...")
     venv_cfg = os.path.join(VENV_DIR, "pyvenv.cfg")
     if os.path.exists(VENV_DIR) and not os.path.exists(venv_cfg):
         print(f"⚠️  Detected broken venv, deleting: {VENV_DIR}")
@@ -33,9 +34,12 @@ def delete_broken_venv():
         except PermissionError:
             print("❌ Cannot delete venv while active. Please deactivate and rerun.")
             sys.exit(1)
+    else:
+        print("✔ No broken venv detected.")
 
 def create_venv():
     """Create virtual environment if missing."""
+    print("\n🔹 STEP 2: Creating or validating virtual environment...")
     if not os.path.exists(VENV_DIR):
         print(f"✨ Creating virtual environment: {VENV_DIR}")
         venv.create(VENV_DIR, with_pip=True)
@@ -50,6 +54,8 @@ def get_python_path():
 
 def install_dependencies(pip_path):
     """Install PyTorch and other dependencies."""
+    print("\n🔹 STEP 3: Installing dependencies...")
+
     if FORCE_CPU:
         print("⚡ Installing CPU-only PyTorch")
         run(f'"{pip_path}" install --upgrade pip')
@@ -63,34 +69,36 @@ def install_dependencies(pip_path):
     run(f'"{pip_path}" install diffusers transformers accelerate')
 
 # -------------------------------
-# Main setup and execution
+# MAIN EXECUTION
 # -------------------------------
 if __name__ == "__main__":
-    # Step 1: Delete broken venv if exists
+
+    # Step 1: Check and delete broken venv
     delete_broken_venv()
 
-    # Step 2: Create virtual environment
+    # Step 2: Create venv
     create_venv()
 
     pip_path = get_pip_path()
     python_path = get_python_path()
 
-    # Step 3: Upgrade pip
+    print("\n🔹 STEP 3: Upgrading pip inside venv...")
     run(f'"{python_path}" -m pip install --upgrade pip')
 
-    # Step 4: Install dependencies
+    # Step 4: Install packages
     install_dependencies(pip_path)
 
-    # Step 5: Force CPU-only for torch
-    os.environ["CUDA_VISIBLE_DEVICES"] = ""  # Ensures CPU-only execution
+    # Force CPU-only mode
+    os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
-    # Step 6: Run the model script
+    print("\n🔹 STEP 4: Running model download script...")
     model_path = os.path.abspath(MODEL_SCRIPT)
+
     if not os.path.exists(model_path):
         print(f"❌ Model script not found: {model_path}")
         sys.exit(1)
 
-    # Run the model in the new environment
     run(f'"{python_path}" "{model_path}"')
 
-    print("\n✅ Production setup complete and model executed successfully!")
+    print("\n🎉 STEP 4 COMPLETED: Model downloaded successfully!")
+    print("✅ Production setup complete and model executed successfully!")

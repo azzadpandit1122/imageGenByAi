@@ -9,7 +9,7 @@ print("Downloading Diffusers model from HuggingFace...")
 
 pipe = StableDiffusionPipeline.from_pretrained(
     "nitrosocke/Ghibli-Diffusion",
-    torch_dtype=torch.float16
+    torch_dtype=torch.float32  # CPU uses float32
 )
 
 pipe.save_pretrained(LOCAL_DIR)
