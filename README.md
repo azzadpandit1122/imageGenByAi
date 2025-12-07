@@ -6,7 +6,7 @@ This project includes automated setup scripts, model downloading, and image gene
 ---
 
 ## 📁 Project Structure
-
+```cmd
 imageGenByAi/
 │── .venv/ # Virtual environment (ignored in Git)
 │── models/ # Downloaded ML models (ignored in Git)
@@ -15,7 +15,7 @@ imageGenByAi/
 │── setup_and_run.py # One-click setup + run helper
 │── .gitignore
 │── README.md
-
+```
 
 ---
 
