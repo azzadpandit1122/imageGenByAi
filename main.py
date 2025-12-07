@@ -1,5 +1,8 @@
 from diffusers import StableDiffusionPipeline
 import torch
+from venv_checker import VenvChecker
+
+VenvChecker.ensure_venv()
 
 MODEL_DIR = "./models/ghibli-diffusion"
 
